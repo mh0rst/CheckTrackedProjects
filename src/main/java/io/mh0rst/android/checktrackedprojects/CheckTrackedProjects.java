@@ -22,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,10 +44,10 @@ public class CheckTrackedProjects {
         }
         String latest = args[0];
         String toCompare = args[1];
-        Manifest los = args.length > 2 ? Manifest.valueOf(args[2]) : Manifest.LOS14_1;
-        List<Project> cmProjects = parseManifest(getManifest(los));
+        Manifest mani = args.length > 2 ? Manifest.valueOf(args[2]) : Manifest.LOS14_1;
+        List<Project> projects = parseManifest(getManifest(mani));
         List<Project> aospProjects = parseManifest(getAOSPManifest(latest));
-        List<Project> trackedProjects = findTrackedProjects(los, cmProjects, aospProjects);
+        List<Project> trackedProjects = findTrackedProjects(mani, projects, aospProjects);
         System.out.println("Found " + trackedProjects.size() + " tracked projects");
         int updateCounter = checkTrackedProjects(latest, toCompare, trackedProjects);
         System.out.println("Found " + updateCounter + " updated projects in AOSP");
@@ -78,14 +77,14 @@ public class CheckTrackedProjects {
         return updateCounter;
     }
 
-    private static List<Project> findTrackedProjects(Manifest los, List<Project> cmProjects,
+    private static List<Project> findTrackedProjects(Manifest mani, List<Project> projects,
         List<Project> aospProjects) {
         List<Project> trackedProjects = new ArrayList<>();
-        for (Project cmProject : cmProjects) {
-            if (!"aosp".equals(cmProject.remote)) {
+        for (Project project : projects) {
+            if (!"aosp".equals(project.remote)) {
                 aospProjects.stream()
-                            .filter((Predicate<Project>) p -> p.path.equals(cmProject.path) ||
-                                                              p.path.equals(los.entries.map.get(cmProject.path)))
+                            .filter(p -> p.path.equals(project.path) ||
+                                         p.path.equals(mani.entries.map.get(project.path)))
                             .forEach(trackedProjects::add);
             }
         }
@@ -105,9 +104,9 @@ public class CheckTrackedProjects {
         return projects;
     }
 
-    private static String getManifest(Manifest linOS) throws IOException {
+    private static String getManifest(Manifest mani) throws IOException {
         StringBuilder manifest = new StringBuilder();
-        for (String source : linOS.sources.sources) {
+        for (String source : mani.sources.sources) {
             manifest.append(Fetcher.fetchFromURL(source));
         }
         return manifest.toString();
