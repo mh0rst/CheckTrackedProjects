@@ -44,11 +44,14 @@ public class CheckTrackedProjects {
         }
         String latest = args[0];
         String toCompare = args[1];
-        Manifest mani = args.length > 2 ? Manifest.valueOf(args[2]) : Manifest.LOS14_1;
-        List<Project> projects = parseManifest(getManifest(mani));
+        Manifest mani = args.length > 2 ? Manifest.valueOf(args[2]) : null;
         List<Project> aospProjects = parseManifest(getAOSPManifest(latest));
-        List<Project> trackedProjects = findTrackedProjects(mani, projects, aospProjects);
-        System.out.println("Found " + trackedProjects.size() + " tracked projects");
+        List<Project> trackedProjects = aospProjects;
+        if (mani != null) {
+            List<Project> projects = parseManifest(getManifest(mani));
+            trackedProjects = findTrackedProjects(mani, projects, aospProjects);
+        }
+        System.out.println("Found " + trackedProjects.size() + (mani == null ? "" : " tracked") + " projects");
         int updateCounter = checkTrackedProjects(latest, toCompare, trackedProjects);
         System.out.println("Found " + updateCounter + " updated projects in AOSP");
 
@@ -67,7 +70,7 @@ public class CheckTrackedProjects {
                 }
                 project.latestFound = true;
                 if (!match.contains(toCompare)) {
-                    System.out.println("Tracked project " + project.name + " has been updated");
+                    System.out.println("Project " + project.name + " has been updated");
                     updateCounter++;
                     break;
                 }

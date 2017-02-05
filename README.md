@@ -1,7 +1,7 @@
 # CheckTrackedProjects
 Java tool to check tracked AOSP projects from Android manifests for updates between tags.
 
-It takes the name of a new and old AOSP tag, and checks the tracked projects in the android manifest for updates introduced by the new tag.
+It takes the name of a new and old AOSP tag, and checks the tracked projects in the android manifest for updates introduced by the new tag. If the Android manifest parameter is omitted, the tool prints all projects that were updated between the given tags.
 
 ## Requirements
 - JDK 8
